@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mania Mix - Controle de Validade</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+
+    <!-- Tela de Autenticação -->
+    <div id="auth-container">
+        <div class="auth-box">
+            <h1 id="auth-title">Login</h1>
+            <p id="auth-subtitle">Acesse sua conta para gerenciar seus produtos</p>
+            <form id="login-form">
+                <div class="input-group"><label for="login-email">E-mail</label><input type="email" id="login-email" placeholder="seu@email.com" required></div>
+                <div class="input-group"><label for="login-password">Senha</label><input type="password" id="login-password" placeholder="Sua senha" required></div>
+                <button type="submit" class="primary-button">Entrar</button>
+            </form>
+            <form id="register-form" class="hidden">
+                <div class="input-group"><label for="register-email">E-mail</label><input type="email" id="register-email" placeholder="seu@email.com" required></div>
+                <div class="input-group"><label for="register-password">Senha</label><input type="password" id="register-password" placeholder="Crie uma senha" required></div>
+                <button type="submit" class="primary-button">Criar Conta</button>
+            </form>
+            <p class="auth-toggle"><span id="toggle-text">Não tem uma conta?</span> <a href="#" id="show-register">Cadastre-se</a></p>
+        </div>
+    </div>
+
+    <!-- App Principal -->
+    <div id="app-container" class="container hidden">
+        <header>
+            <div class="header-content">
+                <h1>Mania Mix - Unidade 1</h1>
+                <p>Controle de Validade</p>
+            </div>
+            <div class="header-exit"><button id="logout-btn" class="secondary-button"><i class="fas fa-sign-out-alt"></i> Sair</button></div>
+        </header>
+        <main>
+            <section class="summary-cards">
+                <!-- Adicionado data-filter para interatividade -->
+                <div class="card total-card" data-filter="todos"><div class="card-content"><span id="total-produtos">0</span><p>Total de Produtos</p></div><div class="card-icon"><i class="fas fa-box"></i></div></div>
+                <div class="card fresh-card" data-filter="fresh"><div class="card-content"><span id="produtos-frescos">0</span><p>Produtos Frescos</p></div><div class="card-icon"><i class="fas fa-check-circle"></i></div></div>
+                <div class="card warning-card" data-filter="warning"><div class="card-content"><span id="proximos-vencimento">0</span><p>Próximos ao Vencimento</p></div><div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div></div>
+                <div class="card expired-card" data-filter="expired"><div class="card-content"><span id="produtos-vencidos">0</span><p>Produtos Vencidos</p></div><div class="card-icon"><i class="fas fa-times-circle"></i></div></div>
+            </section>
+            <section class="actions-bar">
+                <div class="search-bar"><i class="fas fa-search"></i><input type="text" id="search-input" placeholder="Buscar produtos..."></div>
+                <div class="filter-bar"><select id="filter-select"><option value="todos">Todos</option><option value="fresh">Frescos</option><option value="warning">Próximos ao Vencimento</option><option value="expired">Vencidos</option></select></div>
+                <button id="add-product-btn" class="primary-button"><i class="fas fa-plus"></i> Adicionar Produto</button>
+            </section>
+            <section id="product-list" class="product-grid"></section>
+        </main>
+    </div>
+
+    <!-- Modal de Adicionar Produto -->
+    <div id="product-modal" class="modal-overlay">
+        <div class="modal-content">
+            <form id="product-form">
+                <h2 id="modal-title">Adicionar Produto</h2>
+                <input type="hidden" id="product-id">
+                <div class="form-group full-width"><label for="product-name">Nome do Produto</label><input type="text" id="product-name" required></div>
+                <div class="form-grid">
+                    <div class="form-group"><label for="product-category">Categoria</label><input type="text" id="product-category" placeholder="Ex: Laticínios" required></div>
+                    <div class="form-group"><label for="product-location">Localização</label><input type="text" id="product-location" placeholder="Ex: Prateleira A-01" required></div>
+                    <div class="form-group"><label for="product-date">Data de Vencimento</label><input type="date" id="product-date" required></div>
+                    <div class="form-group"><label for="product-quantity">Quantidade</label><input type="number" id="product-quantity" min="1" value="1" required></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancel-btn" class="secondary-button">Cancelar</button>
+                    <button type="submit" id="save-btn" class="primary-button">Salvar Produto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rodapé com créditos -->
+    <footer>
+        <p>Desenvolvido por <a href="https://github.com/seu-usuario-aqui" target="_blank" rel="noopener noreferrer">João Batista</a></p>
+    </footer>
+
+    <!-- Scripts do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
