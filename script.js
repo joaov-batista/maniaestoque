@@ -1,4 +1,4 @@
-// credenciais do Firebase.
+// Aqui ficam as chaves do meu projeto no Firebase, não posso mostrar pra ninguém.
 const firebaseConfig = {
   apiKey: "AIzaSyCpSYROtAFclPOqPwTeu0NvEG4FUIee5ec",
   authDomain: "estoquemania-63d6e.firebaseapp.com",
@@ -9,12 +9,12 @@ const firebaseConfig = {
   measurementId: "G-4C6Y8MCBWR"
 };
 
-// Inicializa o Firebase
+// Iniciando a conexão com o Firebase, a mágica começa aqui.
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// === SELETORES DO DOM ===
+// Pegando todos os botões e campos da tela pra poder usar depois.
 const authContainer = document.getElementById('auth-container');
 const appContainer = document.getElementById('app-container');
 const loginForm = document.getElementById('login-form');
@@ -34,10 +34,13 @@ const toggleText = document.getElementById('toggle-text');
 const toggleLink = document.getElementById('show-register');
 const summaryCardsContainer = document.querySelector('.summary-cards');
 
+// Variáveis que vou precisar em vários lugares do código.
 let localProducts = [];
 let unsubscribe;
 
-// === LÓGICA DE AUTENTICAÇÃO ===
+// --- Toda a parte de login e de criar conta nova ---
+
+// Função pra trocar entre a tela de login e a de cadastro.
 showRegisterLink.addEventListener('click', (e) => {
     e.preventDefault();
     loginForm.classList.toggle('hidden');
@@ -49,6 +52,7 @@ showRegisterLink.addEventListener('click', (e) => {
     toggleLink.textContent = isLoginVisible ? 'Cadastre-se' : 'Faça Login';
 });
 
+// Quando o cara clica em 'Criar Conta'.
 registerForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('register-email').value;
@@ -63,6 +67,7 @@ registerForm.addEventListener('submit', (e) => {
         });
 });
 
+// Quando ele tenta entrar no sistema.
 loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -70,9 +75,10 @@ loginForm.addEventListener('submit', (e) => {
     auth.signInWithEmailAndPassword(email, password).catch(error => { console.error("Erro no login:", error); alert("E-mail ou senha inválidos."); });
 });
 
+// Botão de sair, pra deslogar.
 logoutBtn.addEventListener('click', () => auth.signOut());
 
-// === OBSERVADOR DE ESTADO DE AUTENTICAÇÃO ===
+// Essa é a parte mais importante. O Firebase fica de olho se tem alguém logado ou não e mostra a tela certa.
 auth.onAuthStateChanged(user => {
     if (user) {
         authContainer.classList.add('hidden');
@@ -85,14 +91,17 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-// === LÓGICA PRINCIPAL DO APP ===
+// A função principal que roda quando o usuário consegue entrar no sistema.
 function initAppForUser() {
     const productsRef = db.collection('products');
+    
+    // Aqui ele fica ouvindo o banco de dados em tempo real. Se alguém adicionar um produto, aparece na hora pra todo mundo.
     unsubscribe = productsRef.onSnapshot(snapshot => {
         localProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderProducts();
     }, error => console.error("Erro ao buscar produtos: ", error));
 
+    // Lógica pra salvar um produto novo ou editar um que já existe.
     const productFormHandler = (e) => {
         e.preventDefault();
         const id = document.getElementById('product-id').value;
@@ -109,6 +118,7 @@ function initAppForUser() {
 
     productForm.addEventListener('submit', productFormHandler);
 
+    // Pra quando clicar nos botões de editar ou deletar um produto.
     productList.addEventListener('click', (e) => {
         const target = e.target.closest('button');
         if (!target) return;
@@ -132,7 +142,9 @@ function initAppForUser() {
     unsubscribe = () => { productForm.removeEventListener('submit', productFormHandler); };
 }
 
-// === FUNÇÕES AUXILIARES ===
+// --- Funções que ajudam o resto do código a funcionar ---
+
+// Pra abrir e fechar aquela janelinha de adicionar produto.
 const openModal = () => modal.classList.add('active');
 const closeModal = () => {
     modal.classList.remove('active');
@@ -141,6 +153,7 @@ const closeModal = () => {
     document.getElementById('modal-title').textContent = 'Adicionar Produto';
 };
 
+// Calcula se o produto tá vencido, perto de vencer ou de boa.
 const getProductStatus = (expiryDateStr) => {
     const today = new Date();
     const expiry = new Date(new Date(expiryDateStr).getTime() + 24 * 60 * 60 * 1000);
@@ -154,14 +167,19 @@ const getProductStatus = (expiryDateStr) => {
     return { className: 'fresh', text: 'Fresco' };
 };
 
+// A função que desenha todos os produtos na tela. É aqui que o filtro e a busca acontecem.
 const renderProducts = () => {
     productList.innerHTML = '';
     const searchTerm = searchInput.value.toLowerCase();
     const filterTerm = filterSelect.value;
-    const filteredProducts = localProducts.filter(p => {
+    
+    let filteredProducts = localProducts.filter(p => {
         const statusClass = getProductStatus(p.date).className;
         return p.name.toLowerCase().includes(searchTerm) && (filterTerm === 'todos' || filterTerm === statusClass);
     });
+
+    // MUDANÇA: Adicionei essa linha pra ordenar os produtos por data, do mais próximo ao mais distante.
+    filteredProducts.sort((a, b) => new Date(a.date) - new Date(b.date));
 
     if (filteredProducts.length === 0) {
         productList.innerHTML = `<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center; padding: 2rem;">Nenhum produto encontrado.</p>`;
@@ -185,6 +203,7 @@ const renderProducts = () => {
     updateSummary();
 };
 
+// Atualiza os números lá de cima: total de produtos, vencidos, etc.
 const updateSummary = () => {
     document.getElementById('total-produtos').textContent = localProducts.length;
     document.getElementById('produtos-frescos').textContent = localProducts.filter(p => getProductStatus(p.date).className === 'fresh').length;
@@ -192,14 +211,14 @@ const updateSummary = () => {
     document.getElementById('produtos-vencidos').textContent = localProducts.filter(p => getProductStatus(p.date).className === 'expired').length;
 };
 
-// Listeners gerais
+// --- Deixando os outros botões e campos prontos pra quando o usuário interagir ---
 addProductBtn.addEventListener('click', openModal);
 cancelBtn.addEventListener('click', closeModal);
 modal.addEventListener('click', (e) => e.target === modal && closeModal());
 searchInput.addEventListener('input', renderProducts);
 filterSelect.addEventListener('change', renderProducts);
 
-// Listener para os cards do dashboard
+// A última funcionalidade que pedi, pra filtrar clicando nos cards.
 summaryCardsContainer.addEventListener('click', (e) => {
     const card = e.target.closest('.card');
     if (card && card.dataset.filter) {
